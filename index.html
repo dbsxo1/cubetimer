@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>cubetimer</title>
+  <meta name="description" content="3x3 큐브 타이머">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="cubetimer">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <!-- 타이머 -->
+    <section class="screen on" id="screen-timer">
+      <header class="timer-head fade-when-running">
+        <button class="pill" id="sessionBtn" type="button"><span id="sessionName">세션 1</span> <span class="chev">▾</span></button>
+        <button class="icon-btn" id="newScrBtn" type="button" aria-label="새 스크램블">↻</button>
+      </header>
+      <div class="scramble-box fade-when-running" id="scrambleBox">
+        <div id="scrambleText" class="scramble-text">스크램블 준비 중…</div>
+        <svg id="scrambleNet" class="net" viewBox="0 0 120 90" aria-label="스크램블 그림"></svg>
+      </div>
+      <button class="backup-banner fade-when-running hidden" id="backupBanner" type="button">백업한 지 오래됐어요 · <b>지금 백업</b></button>
+
+      <div class="timer-zone" id="timerZone">
+        <div class="insp-label" id="inspLabel"></div>
+        <div class="time" id="timeDisplay">0.00</div>
+        <div class="hint" id="hint">길게 눌렀다 떼면 시작</div>
+        <div class="penalty hidden" id="penaltyBar">
+          <button type="button" data-pen="0">OK</button>
+          <button type="button" data-pen="2">+2</button>
+          <button type="button" data-pen="-1">DNF</button>
+          <button type="button" data-pen="del" class="danger">삭제</button>
+        </div>
+      </div>
+
+      <div class="quick-stats fade-when-running" id="quickStats">
+        <div><b id="qAo5">-</b><span>ao5</span></div>
+        <div><b id="qAo12">-</b><span>ao12</span></div>
+        <div><b id="qBest" class="mint">-</b><span>최고</span></div>
+        <div><b id="qCount">0</b><span>횟수</span></div>
+      </div>
+    </section>
+
+    <!-- 기록 -->
+    <section class="screen scroll" id="screen-list">
+      <h1>기록 <small id="listSub"></small></h1>
+      <div id="solveList" class="solve-list"></div>
+    </section>
+
+    <!-- 통계 -->
+    <section class="screen scroll" id="screen-stats">
+      <h1>통계 <small id="statsSub"></small></h1>
+      <div class="card chart-card">
+        <svg id="chart" viewBox="0 0 320 140" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><i class="dot mint-bg"></i>기록</span><span><i class="dot white-bg"></i>ao5</span></div>
+      </div>
+      <div class="stat-grid" id="statGrid"></div>
+    </section>
+
+    <!-- 설정 -->
+    <section class="screen scroll" id="screen-settings">
+      <h1>설정</h1>
+
+      <div class="group-title">타이머</div>
+      <div class="card list">
+        <label class="row"><span>15초 관찰 시간 (WCA)</span><input type="checkbox" class="toggle" data-setting="insp"></label>
+        <label class="row"><span>도는 중 시간 숨기기</span><input type="checkbox" class="toggle" data-setting="hideRunning"></label>
+      </div>
+
+      <div class="group-title">스크램블</div>
+      <div class="card list">
+        <label class="row"><span>스크램블 표시</span><input type="checkbox" class="toggle" data-setting="showScr"></label>
+        <label class="row" id="netRow"><span>스크램블 그림 표시</span><input type="checkbox" class="toggle" data-setting="showNet"></label>
+      </div>
+      <p class="foot">스크램블을 끄면 그림도 숨겨지고, 기록에도 스크램블이 저장되지 않아요.</p>
+
+      <div class="group-title">알림</div>
+      <div class="card list">
+        <label class="row"><span>소리</span><input type="checkbox" class="toggle" data-setting="sound"></label>
+        <label class="row"><span>진동 (iOS 18 이상)</span><input type="checkbox" class="toggle" data-setting="haptic"></label>
+      </div>
+
+      <div class="group-title">세션</div>
+      <div class="card list">
+        <button class="row" type="button" id="manageSessions"><span>세션 관리</span><span class="muted" id="settingsSession">세션 1 ›</span></button>
+      </div>
+
+      <div class="group-title">백업</div>
+      <div class="card list">
+        <button class="row mint" type="button" id="exportBtn"><span>기록 내보내기</span><span>⤴︎</span></button>
+        <button class="row mint" type="button" id="importBtn"><span>기록 가져오기</span><span>⤵︎</span></button>
+      </div>
+      <p class="foot" id="backupInfo">마지막 백업: 없음</p>
+      <p class="foot">홈 화면 아이콘을 지우거나 폰을 바꾸면 기록이 사라져요. 가끔 내보내서 파일 앱이나 iCloud Drive에 보관하세요. csTimer 백업 파일도 가져올 수 있어요.</p>
+
+      <div class="group-title">기타</div>
+      <div class="card list">
+        <button class="row danger" type="button" id="clearSession"><span>현재 세션 기록 모두 삭제</span></button>
+      </div>
+      <p class="foot">cubetimer <span id="version"></span> · 스크램블: cubejs (MIT)</p>
+      <input type="file" id="importFile" accept=".json,.txt,application/json,text/plain" hidden>
+    </section>
+  </main>
+
+  <nav class="tabbar fade-when-running" id="tabbar">
+    <button class="tab on" data-screen="timer" type="button"><span class="ti">⏱</span>타이머</button>
+    <button class="tab" data-screen="list" type="button"><span class="ti">☰</span>기록</button>
+    <button class="tab" data-screen="stats" type="button"><span class="ti">↗</span>통계</button>
+    <button class="tab" data-screen="settings" type="button"><span class="ti">⚙︎</span>설정</button>
+  </nav>
+
+  <!-- 도는 중: 화면 어디를 눌러도 멈춤 -->
+  <div class="stop-layer hidden" id="stopLayer"></div>
+
+  <!-- 바텀 시트 -->
+  <div class="sheet-backdrop hidden" id="sheetBackdrop">
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <!-- iOS 18 진동용 숨은 스위치 -->
+  <label id="hapticLabel" class="haptic-hack" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
+
+  <script src="app.js"></script>
+</body>
+</html>
