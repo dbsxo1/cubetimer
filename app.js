@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 const STORE_KEY = 'cubetimer.v1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -480,6 +480,7 @@ function showScreen(name) {
   $$('.screen').forEach((s) => s.classList.toggle('on', s.id === 'screen-' + name));
   if (name === 'list') renderList();
   if (name === 'stats') renderStatsScreen();
+  if (name === 'settings') fixAppHeight();
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => showScreen(t.dataset.screen)));
 
@@ -694,6 +695,13 @@ function fixAppHeight() {
   // 노치/다이내믹 아일랜드 아이폰(위쪽 여백 있음)인데 아래 여백이 0이면 홈 바 높이만큼 직접 확보
   if (short && top > 20 && bottom < 20) root.setProperty('--safe-bottom', '34px');
   else root.removeProperty('--safe-bottom');
+  // 문제 확인용 화면 정보 (설정 맨 아래)
+  const tb = document.getElementById('tabbar').getBoundingClientRect();
+  const vv = window.visualViewport;
+  document.getElementById('screenInfo').textContent =
+    `화면 s${screen.width}x${screen.height} i${innerWidth}x${innerHeight} v${vv ? Math.round(vv.height) : '-'} ` +
+    `c${document.documentElement.clientHeight} top${top} bot${bottom} app${short ? screen.height : innerHeight} ` +
+    `tab${Math.round(tb.top)}-${Math.round(tb.bottom)} sa${standalone ? 1 : 0}`;
 }
 fixAppHeight();
 addEventListener('resize', fixAppHeight);
