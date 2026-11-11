@@ -1,6 +1,6 @@
 // 오프라인용: 앱 파일을 폰에 저장해두고, 인터넷 없이도 열리게 함.
 // 업데이트할 때는 CACHE 이름의 버전을 올리면 다음 실행 때 새 파일로 바뀜.
-const CACHE = 'cubetimer-v1.0.0';
+const CACHE = 'cubetimer-v1.0.1';
 const FILES = [
   './',
   'index.html',
@@ -16,7 +16,12 @@ const FILES = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' → 브라우저에 남은 옛날 파일 말고 서버의 새 파일을 받아서 저장
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {

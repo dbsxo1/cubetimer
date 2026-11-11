@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const STORE_KEY = 'cubetimer.v1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -669,10 +669,25 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && (phase === 'hold' || phase === 'ready')) { clearTimeout(holdTimer); phase = 'idle'; setTimeClass(); }
 });
 
-// 오프라인용 서비스 워커
+// 오프라인용 서비스 워커. 새 버전이 깔리면 타이머가 쉬는 중일 때 자동으로 새로고침.
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && phase === 'idle' && !isSheetOpen()) location.reload();
+  });
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+
+// 아이폰 홈 화면 앱: 레이아웃 높이가 실제 화면보다 상태바만큼 짧게 잡히는 경우가 있어 실제 높이로 맞춤
+function fixAppHeight() {
+  const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const portrait = innerHeight >= innerWidth;
+  const h = standalone && portrait && screen.height > innerHeight ? screen.height : innerHeight;
+  document.documentElement.style.setProperty('--app-h', h + 'px');
+}
+fixAppHeight();
+addEventListener('resize', fixAppHeight);
+addEventListener('orientationchange', () => setTimeout(fixAppHeight, 300));
 
 // 시작
 renderSettings();
