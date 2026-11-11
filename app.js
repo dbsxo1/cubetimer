@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const STORE_KEY = 'cubetimer.v1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -679,11 +679,21 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 
 // 아이폰 홈 화면 앱: 레이아웃 높이가 실제 화면보다 상태바만큼 짧게 잡히는 경우가 있어 실제 높이로 맞춤
+// 이때 아이폰이 아래쪽 안전 영역(홈 바)을 0으로 알려주는 경우가 있어서, 그러면 직접 34px을 비워둠
+const insetProbe = document.createElement('div');
+insetProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+document.body.appendChild(insetProbe);
 function fixAppHeight() {
+  const root = document.documentElement.style;
   const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   const portrait = innerHeight >= innerWidth;
-  const h = standalone && portrait && screen.height > innerHeight ? screen.height : innerHeight;
-  document.documentElement.style.setProperty('--app-h', h + 'px');
+  const short = standalone && portrait && screen.height - innerHeight > 8;
+  root.setProperty('--app-h', (short ? screen.height : innerHeight) + 'px');
+  const cs = getComputedStyle(insetProbe);
+  const top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
+  // 노치/다이내믹 아일랜드 아이폰(위쪽 여백 있음)인데 아래 여백이 0이면 홈 바 높이만큼 직접 확보
+  if (short && top > 20 && bottom < 20) root.setProperty('--safe-bottom', '34px');
+  else root.removeProperty('--safe-bottom');
 }
 fixAppHeight();
 addEventListener('resize', fixAppHeight);
