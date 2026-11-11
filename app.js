@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 const STORE_KEY = 'cubetimer.v1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -679,28 +679,19 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
-// 아이폰 홈 화면 앱: 레이아웃 높이가 실제 화면보다 상태바만큼 짧게 잡히는 경우가 있어 실제 높이로 맞춤
-// 이때 아이폰이 아래쪽 안전 영역(홈 바)을 0으로 알려주는 경우가 있어서, 그러면 직접 34px을 비워둠
+// 화면 높이를 실제 보이는 영역에 맞춤 (아이폰 주소창/홈 화면 앱 차이 대응)
 const insetProbe = document.createElement('div');
 insetProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
 document.body.appendChild(insetProbe);
 function fixAppHeight() {
-  const root = document.documentElement.style;
-  const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  const portrait = innerHeight >= innerWidth;
-  const short = standalone && portrait && screen.height - innerHeight > 8;
-  root.setProperty('--app-h', (short ? screen.height : innerHeight) + 'px');
+  document.documentElement.style.setProperty('--app-h', innerHeight + 'px');
+  // 문제 확인용 화면 정보 (설정 맨 아래)
   const cs = getComputedStyle(insetProbe);
   const top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
-  // 노치/다이내믹 아일랜드 아이폰(위쪽 여백 있음)인데 아래 여백이 0이면 홈 바 높이만큼 직접 확보
-  if (short && top > 20 && bottom < 20) root.setProperty('--safe-bottom', '34px');
-  else root.removeProperty('--safe-bottom');
-  // 문제 확인용 화면 정보 (설정 맨 아래)
+  const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   const tb = document.getElementById('tabbar').getBoundingClientRect();
-  const vv = window.visualViewport;
   document.getElementById('screenInfo').textContent =
-    `화면 s${screen.width}x${screen.height} i${innerWidth}x${innerHeight} v${vv ? Math.round(vv.height) : '-'} ` +
-    `c${document.documentElement.clientHeight} top${top} bot${bottom} app${short ? screen.height : innerHeight} ` +
+    `화면 s${screen.width}x${screen.height} i${innerWidth}x${innerHeight} top${top} bot${bottom} ` +
     `tab${Math.round(tb.top)}-${Math.round(tb.bottom)} sa${standalone ? 1 : 0}`;
 }
 fixAppHeight();

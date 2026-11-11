@@ -44,12 +44,13 @@ html, body { overflow: hidden; }
 .screen {
   position: absolute;
   inset: 0;
+  overflow-x: hidden;
   padding: calc(var(--safe-top) + 10px) 0 calc(var(--tab-h) + var(--safe-bottom));
   display: none;
   flex-direction: column;
 }
 .screen.on { display: flex; }
-.screen.scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; }
+.screen.scroll { overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; }
 .screen.scroll.on { display: block; }
 
 h1 { font-size: 28px; font-weight: 700; margin: 14px 18px 12px; letter-spacing: -0.5px; }
@@ -138,7 +139,7 @@ body.running .fade-when-running { opacity: 0; pointer-events: none; }
 /* ---------- 설정 ---------- */
 .group-title { font-size: 12px; color: var(--muted); margin: 18px 30px 6px; }
 .list .row {
-  display: flex; justify-content: space-between; align-items: center; width: 100%;
+  display: flex; gap: 12px; justify-content: space-between; align-items: center; width: 100%;
   padding: 12px 14px; font-size: 15px; border-bottom: .5px solid var(--line); text-align: left; min-height: 48px;
 }
 .list .row:last-child { border-bottom: 0; }
