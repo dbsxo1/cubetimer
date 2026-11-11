@@ -24,15 +24,15 @@
         <button class="icon-btn" id="newScrBtn" type="button" aria-label="새 스크램블">↻</button>
       </header>
       <div class="scramble-box fade-when-running" id="scrambleBox">
-        <div id="scrambleText" class="scramble-text">스크램블 준비 중…</div>
-        <svg id="scrambleNet" class="net" viewBox="0 0 120 90" aria-label="스크램블 그림"></svg>
+        <div id="scrambleText" class="scramble-text">Generating scramble…</div>
+        <svg id="scrambleNet" class="net" viewBox="0 0 120 90" aria-label="전개도"></svg>
       </div>
-      <button class="backup-banner fade-when-running hidden" id="backupBanner" type="button">백업한 지 오래됐어요 · <b>지금 백업</b></button>
+      <button class="backup-banner fade-when-running hidden" id="backupBanner" type="button">백업할 때가 됐어요 · <b>백업하기</b></button>
 
       <div class="timer-zone" id="timerZone">
         <div class="insp-label" id="inspLabel"></div>
         <div class="time" id="timeDisplay">0.00</div>
-        <div class="hint" id="hint">길게 눌렀다 떼면 시작</div>
+        <div class="hint" id="hint">꾹 눌렀다 떼면 시작</div>
         <div class="penalty hidden" id="penaltyBar">
           <button type="button" data-pen="0">OK</button>
           <button type="button" data-pen="2">+2</button>
@@ -44,7 +44,7 @@
       <div class="quick-stats fade-when-running" id="quickStats">
         <div><b id="qAo5">-</b><span>ao5</span></div>
         <div><b id="qAo12">-</b><span>ao12</span></div>
-        <div><b id="qBest" class="mint">-</b><span>최고</span></div>
+        <div><b id="qBest" class="mint">-</b><span>PB</span></div>
         <div><b id="qCount">0</b><span>횟수</span></div>
       </div>
     </section>
@@ -71,21 +71,22 @@
 
       <div class="group-title">타이머</div>
       <div class="card list">
-        <label class="row"><span>15초 관찰 시간 (WCA)</span><input type="checkbox" class="toggle" data-setting="insp"></label>
-        <label class="row"><span>도는 중 시간 숨기기</span><input type="checkbox" class="toggle" data-setting="hideRunning"></label>
+        <label class="row"><span>WCA 15s Inspection</span><input type="checkbox" class="toggle" data-setting="insp"></label>
+        <label class="row"><span>솔빙 중 타이머 숨기기</span><input type="checkbox" class="toggle" data-setting="hideRunning"></label>
       </div>
+      <p class="foot">WCA 15s Inspection: 솔빙 전 15초 동안 큐브를 살펴볼 수 있어요. 15초를 넘기면 +2, 17초를 넘기면 DNF예요.</p>
 
       <div class="group-title">스크램블</div>
       <div class="card list">
-        <label class="row"><span>스크램블 표시</span><input type="checkbox" class="toggle" data-setting="showScr"></label>
-        <label class="row" id="netRow"><span>스크램블 그림 표시</span><input type="checkbox" class="toggle" data-setting="showNet"></label>
+        <label class="row"><span>스크램블 보기</span><input type="checkbox" class="toggle" data-setting="showScr"></label>
+        <label class="row" id="netRow"><span>전개도 표시</span><input type="checkbox" class="toggle" data-setting="showNet"></label>
       </div>
-      <p class="foot">스크램블을 끄면 그림도 숨겨지고, 기록에도 스크램블이 저장되지 않아요.</p>
+      <p class="foot">스크램블을 끄면 전개도도 숨겨지고, 기록에 스크램블이 저장되지 않아요.</p>
 
       <div class="group-title">알림</div>
       <div class="card list">
         <label class="row"><span>소리</span><input type="checkbox" class="toggle" data-setting="sound"></label>
-        <label class="row"><span>진동 (iOS 18 이상)</span><input type="checkbox" class="toggle" data-setting="haptic"></label>
+        <label class="row"><span>햅틱</span><input type="checkbox" class="toggle" data-setting="haptic"></label>
       </div>
 
       <div class="group-title">세션</div>
@@ -103,10 +104,9 @@
 
       <div class="group-title">기타</div>
       <div class="card list">
-        <button class="row danger" type="button" id="clearSession"><span>현재 세션 기록 모두 삭제</span></button>
+        <button class="row danger" type="button" id="clearSession"><span>이 세션 기록 비우기</span></button>
       </div>
       <p class="foot">cubetimer <span id="version"></span> · 스크램블: cubejs (MIT)</p>
-      <p class="foot" id="screenInfo" style="font-family:var(--mono);font-size:10px"></p>
       <input type="file" id="importFile" accept=".json,.txt,application/json,text/plain" hidden>
     </section>
   </main>

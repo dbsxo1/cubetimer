@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = '1.0.4';
+const VERSION = '1.0.5';
 const STORE_KEY = 'cubetimer.v1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -184,7 +184,7 @@ function renderScramble() {
   const box = $('#scrambleBox'), txt = $('#scrambleText'), net = $('#scrambleNet');
   box.classList.toggle('hidden', !state.settings.showScr);
   if (!currentScramble) {
-    txt.textContent = '스크램블 준비 중…'; txt.classList.add('loading'); net.innerHTML = '';
+    txt.textContent = 'Generating scramble…'; txt.classList.add('loading'); net.innerHTML = '';
   } else {
     txt.textContent = currentScramble; txt.classList.remove('loading');
     net.innerHTML = state.settings.showNet ? netSVG(currentScramble) : '';
@@ -236,7 +236,7 @@ function startInspection() {
   inspStart = performance.now(); inspAlerts = {};
   document.body.classList.add('running');
   $('#penaltyBar').classList.add('hidden');
-  hintEl.textContent = '관찰 중 · 길게 눌렀다 떼면 시작'; hintEl.className = 'hint';
+  hintEl.textContent = '준비되면 꾹 누르세요'; hintEl.className = 'hint';
   const tick = () => {
     const e = inspElapsed();
     const left = 15 - Math.floor(e);
@@ -244,8 +244,8 @@ function startInspection() {
       timeEl.textContent = left > 0 ? String(left) : e < 17 ? '+2' : 'DNF';
       setTimeClass('inspecting', left <= 3 ? 'late' : '');
     }
-    if (e >= 8 && !inspAlerts[8]) { inspAlerts[8] = 1; inspEl.textContent = '8초!'; beep(660); }
-    if (e >= 12 && !inspAlerts[12]) { inspAlerts[12] = 1; inspEl.textContent = '12초!'; beep(880); beep(880, 0.09, 0.15, 0.15); }
+    if (e >= 8 && !inspAlerts[8]) { inspAlerts[8] = 1; inspEl.textContent = '8s'; beep(660); }
+    if (e >= 12 && !inspAlerts[12]) { inspAlerts[12] = 1; inspEl.textContent = '12s'; beep(880); beep(880, 0.09, 0.15, 0.15); }
   };
   tick();
   inspTimer = setInterval(tick, 100);
@@ -259,11 +259,16 @@ function startSolve() {
   startSolve.penalty = inspPenalty;
   document.body.classList.add('running');
   $('#stopLayer').classList.remove('hidden');
+  $('#penaltyBar').classList.add('hidden');
   inspEl.textContent = '';
   setTimeClass();
   hintEl.textContent = ''; hintEl.className = 'hint';
+  if (state.settings.hideRunning) {
+    timeEl.innerHTML = '<span class="solving-dots" aria-label="솔빙 중"><i></i><i></i><i></i></span>';
+    return;
+  }
   const loop = () => {
-    timeEl.textContent = state.settings.hideRunning ? '풀이 중' : fmt(performance.now() - startAt);
+    timeEl.textContent = fmt(performance.now() - startAt);
     raf = requestAnimationFrame(loop);
   };
   loop();
@@ -289,11 +294,11 @@ function stopSolve() {
   const v = value(solve);
   const newAo5 = currentAvg(ses.solves, 5);
   if (prevBest != null && v < prevBest) {
-    setTimeClass('pb'); hintEl.textContent = '🎉 새 최고 기록!'; hintEl.className = 'hint pb'; chime();
+    setTimeClass('pb'); hintEl.textContent = '🎉 single PB!'; hintEl.className = 'hint pb'; chime();
   } else if (prevBestAo5 != null && newAo5 != null && newAo5 < prevBestAo5) {
-    setTimeClass(); hintEl.textContent = '🎉 ao5 최고 기록!'; hintEl.className = 'hint pb'; chime();
+    setTimeClass(); hintEl.textContent = '🎉 ao5 PB!'; hintEl.className = 'hint pb'; chime();
   } else {
-    setTimeClass(); hintEl.textContent = '길게 눌렀다 떼면 시작'; hintEl.className = 'hint';
+    setTimeClass(); hintEl.textContent = '꾹 눌렀다 떼면 시작'; hintEl.className = 'hint';
   }
   showPenaltyBar(solve.p);
   takeScramble();
@@ -316,7 +321,7 @@ function setPenalty(index, pen) {
       lastSolveIndex = -1;
       $('#penaltyBar').classList.add('hidden');
       timeEl.textContent = '0.00'; setTimeClass();
-      hintEl.textContent = '길게 눌렀다 떼면 시작'; hintEl.className = 'hint';
+      hintEl.textContent = '꾹 눌렀다 떼면 시작'; hintEl.className = 'hint';
     } else if (index < lastSolveIndex) lastSolveIndex--;
   } else {
     solve.p = Number(pen);
@@ -427,13 +432,13 @@ function renderStatsScreen() {
   const finite = solves.map(value).filter((v) => v !== Infinity);
   const mean = finite.length ? finite.reduce((a, b) => a + b, 0) / finite.length : null;
   const items = [
-    ['최고 단일', fmt(bestSingle(solves)), 'mint'],
-    ['최고 ao5', fmt(bestAvg(solves, 5)), 'mint'],
-    ['현재 ao5', fmt(currentAvg(solves, 5))],
-    ['최고 ao12', fmt(bestAvg(solves, 12)), 'mint'],
-    ['현재 ao12', fmt(currentAvg(solves, 12))],
-    ['현재 ao100', fmt(currentAvg(solves, 100))],
-    ['평균 (DNF 제외)', fmt(mean)],
+    ['single PB', fmt(bestSingle(solves)), 'mint'],
+    ['ao5 PB', fmt(bestAvg(solves, 5)), 'mint'],
+    ['ao5', fmt(currentAvg(solves, 5))],
+    ['ao12 PB', fmt(bestAvg(solves, 12)), 'mint'],
+    ['ao12', fmt(currentAvg(solves, 12))],
+    ['ao100', fmt(currentAvg(solves, 100))],
+    ['전체 평균', fmt(mean)],
     ['횟수', `${solves.length}회${solves.length - finite.length ? ` · DNF ${solves.length - finite.length}` : ''}`],
   ];
   $('#statGrid').innerHTML = items.map(([k, v, c]) => `<div><span>${k}</span><b class="${c || ''}">${v}</b></div>`).join('');
@@ -480,7 +485,6 @@ function showScreen(name) {
   $$('.screen').forEach((s) => s.classList.toggle('on', s.id === 'screen-' + name));
   if (name === 'list') renderList();
   if (name === 'stats') renderStatsScreen();
-  if (name === 'settings') fixAppHeight();
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => showScreen(t.dataset.screen)));
 
@@ -496,7 +500,7 @@ function openSolveSheet(i) {
   const d = new Date(x.d);
   openSheet(`
     <div class="big">${fmtSolve(x)}</div>
-    <div class="sub">${i + 1}번째 · ${d.toLocaleString('ko-KR')}</div>
+    <div class="sub">#${i + 1} · ${d.toLocaleString('ko-KR')}</div>
     ${x.s ? `<div class="scr">${x.s}</div><svg class="net" viewBox="0 0 120 90">${netSVG(x.s)}</svg>` : '<div class="sub">스크램블 없음</div>'}
     <div class="btns">
       <button data-pen="0" class="${x.p === 0 ? 'on' : ''}">OK</button>
@@ -510,7 +514,7 @@ function openSolveSheet(i) {
   sheet.onclick = (e) => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.pen != null) { setPenalty(i, b.dataset.pen); openSolveSheet(i); renderList(); }
-    if (b.dataset.act === 'copy') { navigator.clipboard?.writeText(x.s).then(() => toast('복사했어요')).catch(() => {}); }
+    if (b.dataset.act === 'copy') { navigator.clipboard?.writeText(x.s).then(() => toast('복사됨')).catch(() => {}); }
     if (b.dataset.act === 'del' && confirm('이 기록을 삭제할까요?')) { setPenalty(i, 'del'); closeSheet(); renderList(); }
   };
 }
@@ -518,9 +522,9 @@ function openSolveSheet(i) {
 function openSessionSheet() {
   const items = state.sessions.map((s) =>
     `<button class="item ${s.id === state.current ? 'current' : ''}" data-id="${s.id}"><span>${escapeHTML(s.name)}</span><span class="count">${s.solves.length}회 ${s.id === state.current ? '✓' : ''}</span></button>`).join('');
-  openSheet(`<h2>세션</h2>${items}
+  openSheet(`<h2>세션 관리</h2>${items}
     <button class="wide" data-act="add">+ 새 세션</button>
-    <div class="btns"><button data-act="rename">현재 세션 이름 변경</button><button data-act="delete" class="danger">현재 세션 삭제</button></div>`);
+    <div class="btns"><button data-act="rename">이름 변경</button><button data-act="delete" class="danger">세션 삭제</button></div>`);
   sheet.onclick = (e) => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.id) {
@@ -565,9 +569,9 @@ $$('[data-setting]').forEach((el) => el.addEventListener('change', () => {
 
 $('#clearSession').addEventListener('click', () => {
   const ses = session();
-  if (!ses.solves.length) { toast('지울 기록이 없어요'); return; }
-  if (!confirm(`"${ses.name}"의 기록 ${ses.solves.length}개를 모두 삭제할까요? 되돌릴 수 없어요.`)) return;
-  ses.solves = []; lastSolveIndex = -1; save(); renderStats(); toast('삭제했어요');
+  if (!ses.solves.length) { toast('비울 기록이 없어요'); return; }
+  if (!confirm(`"${ses.name}" 기록 ${ses.solves.length}개를 비울까요? 되돌릴 수 없어요.`)) return;
+  ses.solves = []; lastSolveIndex = -1; save(); renderStats(); toast('삭제됨');
 });
 
 // ====================== 백업 ======================
@@ -592,7 +596,7 @@ async function exportBackup() {
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
   state.lastBackup = Date.now(); state.solvesAtBackup = totalSolves(); save();
-  renderBackupBanner(); toast('백업 파일을 만들었어요');
+  renderBackupBanner(); toast('백업 완료');
 }
 $('#exportBtn').addEventListener('click', exportBackup);
 $('#backupBanner').addEventListener('click', exportBackup);
@@ -606,7 +610,7 @@ $('#importFile').addEventListener('change', async (e) => {
     const incoming = parseBackup(data);
     if (!incoming.length) { toast('가져올 기록이 없어요'); return; }
     const count = incoming.reduce((n, s) => n + s.solves.length, 0);
-    if (!confirm(`세션 ${incoming.length}개, 기록 ${count}개를 가져올까요?\n같은 이름의 세션에 합쳐지고, 이미 있는 기록은 건너뛰어요.`)) return;
+    if (!confirm(`세션 ${incoming.length}개, 기록 ${count}개를 가져올까요?\n같은 이름 세션에 합치고, 중복 기록은 건너뛰어요.`)) return;
     let added = 0;
     for (const inc of incoming) {
       let target = state.sessions.find((s) => s.name === inc.name);
@@ -615,7 +619,7 @@ $('#importFile').addEventListener('change', async (e) => {
       for (const x of inc.solves) if (!seen.has(x.d + ':' + x.t)) { target.solves.push(x); added++; }
       target.solves.sort((a, b) => a.d - b.d);
     }
-    save(); renderStats(); toast(`${added}개 가져왔어요`);
+    save(); renderStats(); toast(`${added}개 가져옴`);
   } catch (err) {
     toast('파일을 읽지 못했어요');
   }
@@ -680,19 +684,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 
 // 화면 높이를 실제 보이는 영역에 맞춤 (아이폰 주소창/홈 화면 앱 차이 대응)
-const insetProbe = document.createElement('div');
-insetProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
-document.body.appendChild(insetProbe);
 function fixAppHeight() {
   document.documentElement.style.setProperty('--app-h', innerHeight + 'px');
-  // 문제 확인용 화면 정보 (설정 맨 아래)
-  const cs = getComputedStyle(insetProbe);
-  const top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
-  const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  const tb = document.getElementById('tabbar').getBoundingClientRect();
-  document.getElementById('screenInfo').textContent =
-    `화면 s${screen.width}x${screen.height} i${innerWidth}x${innerHeight} top${top} bot${bottom} ` +
-    `tab${Math.round(tb.top)}-${Math.round(tb.bottom)} sa${standalone ? 1 : 0}`;
 }
 fixAppHeight();
 addEventListener('resize', fixAppHeight);
