@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cubetimer</title>
+  <meta name="description" content="3x3 큐브 타이머 (컴퓨터용)">
+  <link rel="icon" type="image/png" href="../icons/icon-192.png">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="layout">
+    <aside id="side">
+      <div class="side-head">
+        <select id="sessionSelect" aria-label="세션"></select>
+        <button id="sessionMenuBtn" class="mini" type="button" title="세션 관리">⋯</button>
+      </div>
+      <table class="stats" id="statsTable">
+        <thead><tr><th></th><th>현재</th><th>베스트</th></tr></thead>
+        <tbody>
+          <tr><td>time</td><td id="cur1">-</td><td id="best1">-</td></tr>
+          <tr><td>mo3</td><td id="cur3">-</td><td id="best3">-</td></tr>
+          <tr><td>ao5</td><td id="cur5">-</td><td id="best5">-</td></tr>
+          <tr><td>ao12</td><td id="cur12">-</td><td id="best12">-</td></tr>
+        </tbody>
+      </table>
+      <div class="side-sum"><span id="countText">솔브: 0/0</span><span id="meanText">평균: -</span></div>
+      <div id="solveList" class="solve-list"></div>
+    </aside>
+
+    <main id="main">
+      <header id="top">
+        <span class="puzzle">3x3x3</span>
+        <div id="scramble" class="scramble" title="클릭하면 복사">Generating scramble…</div>
+        <button class="link" id="prevScr" type="button">이전</button>
+        <button class="link" id="nextScr" type="button">다음</button>
+      </header>
+
+      <section id="timerZone">
+        <div id="inspLabel" class="insp-label"></div>
+        <div id="time" class="time">0.00</div>
+        <input id="timeInput" class="time-input hidden" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="12.34">
+        <div id="sub" class="sub">스페이스바를 꾹 눌렀다 떼면 시작</div>
+      </section>
+
+      <footer id="bottom">
+        <button class="link" id="statsBtn" type="button">통계</button>
+        <button class="link" id="settingsBtn" type="button">설정</button>
+        <button class="link" id="exportBtn" type="button">내보내기</button>
+        <button class="link" id="importBtn" type="button">가져오기</button>
+        <span class="spacer"></span>
+        <span class="keys">Space 시작/정지 · Esc 취소 · Ctrl+1 OK · Ctrl+2 +2 · Ctrl+3 DNF · Ctrl+Z 삭제</span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="modalBack" class="modal-back hidden"><div id="modal" class="modal" role="dialog" aria-modal="true"></div></div>
+  <div id="toast" class="toast hidden"></div>
+  <input type="file" id="importFile" accept=".json,.txt,application/json,text/plain" hidden>
+
+  <script src="app.js"></script>
+</body>
+</html>

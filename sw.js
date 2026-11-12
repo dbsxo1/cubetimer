@@ -1,6 +1,6 @@
 // 오프라인용: 앱 파일을 폰에 저장해두고, 인터넷 없이도 열리게 함.
 // 업데이트할 때는 CACHE 이름의 버전을 올리면 다음 실행 때 새 파일로 바뀜.
-const CACHE = 'cubetimer-v1.0.5';
+const CACHE = 'cubetimer-v1.1.0';
 const FILES = [
   './',
   'index.html',
@@ -13,6 +13,11 @@ const FILES = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  // 컴퓨터용
+  'pc/',
+  'pc/index.html',
+  'pc/style.css',
+  'pc/app.js',
 ];
 
 self.addEventListener('install', (e) => {
